@@ -7,7 +7,7 @@ import java.util.List;
 
 @Getter
 @AllArgsConstructor
-public class OrderDelivery {
+public class OrderPack {
     private String orderId;
-    private List<LockerPack> lockerPacks;
+    private List<Pack> lockerPacks;
 }
