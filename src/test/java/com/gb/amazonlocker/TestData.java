@@ -6,6 +6,7 @@ import com.gb.amazonlocker.utils.IdGenerator;
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class TestData {
@@ -82,5 +83,25 @@ public class TestData {
         lockerPackage.setOrderId(IdGenerator.generateId(12));
         lockerPackage.setCode(IdGenerator.generateId(6));
         return lockerPackage;
+    }
+
+    public static Order getPhoneOrder() {
+        Order order = new Order();
+        Item item = new Item();
+        item.setId("IPHONE11");
+        item.setQuantity(1);
+        order.setItems(List.of(item));
+        order.setDeliveryGeoLocation(new GeoLocation(12.909953, 77.601866));
+        return order;
+    }
+
+    public static Order getHeadSetOrder() {
+        Order order = new Order();
+        Item item = new Item();
+        item.setId("JABRAWLHS");
+        item.setQuantity(1);
+        order.setItems(List.of(item));
+        order.setDeliveryGeoLocation(new GeoLocation(12.876416, 77.595466));
+        return order;
     }
 }
