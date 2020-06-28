@@ -1,21 +1,22 @@
 package com.gb.amazonlocker.model;
 
+import com.gb.amazonlocker.utils.IdGenerator;
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.commons.lang3.RandomStringUtils;
 
 @Getter
 @Setter
 public class Locker {
     private String id;
     private LockerSize lockerSize;
-    private LockerLocation lockerLocation;
+    private String locationId;
     private LockerStatus lockerStatus;
 
-    public Locker(LockerSize lockerSize, LockerLocation lockerLocation) {
-        id = RandomStringUtils.randomAlphanumeric(8);
-        this.lockerLocation = lockerLocation;
-        this.lockerLocation = lockerLocation;
+    public Locker(LockerSize lockerSize, String locationId) {
+        id = IdGenerator.generateId(8);
+        this.lockerSize = lockerSize;
+        this.locationId = locationId;
+        this.lockerStatus = LockerStatus.AVAILALBE;
     }
 
 }
