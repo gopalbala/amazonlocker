@@ -17,7 +17,6 @@ Items are kept for maximum of 3 days.
 User gets locker code using which they can open the locker.  
 Once the locker is closed the code is expired and cannot be open again.  
 
-
 1. Assign a closest locker to a person given current co-ordinates( where customer wants )
 2. After order is delivered by courier service to customer specified amazon locker, a 6 digit code will be sent to customer .
 3. Item will be placed in Amazon locker for 3 days
@@ -30,3 +29,4 @@ Once the locker is closed the code is expired and cannot be open again.
 10. Once the Door is closed. User's code will be expired. (User will not be able to open the locker now)
 
 https://www.amazon.com/primeinsider/tips/amazon-locker-qa.html
+Requirements Courtesy - Leetcode
