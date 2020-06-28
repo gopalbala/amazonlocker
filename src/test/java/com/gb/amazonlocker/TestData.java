@@ -90,6 +90,7 @@ public class TestData {
         Item item = new Item();
         item.setId("IPHONE11");
         item.setQuantity(1);
+        order.setOrderId(IdGenerator.generateId(16));
         order.setItems(List.of(item));
         order.setDeliveryGeoLocation(new GeoLocation(12.909953, 77.601866));
         return order;
@@ -100,8 +101,15 @@ public class TestData {
         Item item = new Item();
         item.setId("JABRAWLHS");
         item.setQuantity(1);
+        order.setOrderId(IdGenerator.generateId(16));
         order.setItems(List.of(item));
         order.setDeliveryGeoLocation(new GeoLocation(12.876416, 77.595466));
         return order;
+    }
+
+    public static Pack getPackage() {
+        Order order = getPhoneOrder();
+        Pack pack = new Pack(order.getOrderId(), order.getItems());
+        return pack;
     }
 }
