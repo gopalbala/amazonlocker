@@ -9,11 +9,12 @@ import org.apache.commons.lang3.RandomStringUtils;
 public class Locker {
     private String id;
     private LockerSize lockerSize;
-    private Location location;
+    private GeoLocation geoLocation;
     private LockerStatus lockerStatus;
     private String allotedCustomerId;
 
     public Locker() {
         id = RandomStringUtils.randomAlphanumeric(8);
     }
+
 }

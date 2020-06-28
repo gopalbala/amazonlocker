@@ -5,7 +5,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class Location {
+public class GeoLocation {
     private double latitude;
     private double longitude;
 }
