@@ -7,6 +7,7 @@ import com.gb.amazonlocker.exception.PackPickTimeExceededException;
 import com.gb.amazonlocker.exception.PackageSizeMappingException;
 import com.gb.amazonlocker.model.*;
 import com.gb.amazonlocker.repository.*;
+import com.gb.amazonlocker.utils.SizeUtil;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -58,7 +59,7 @@ public class LockerServiceTest {
     @Test
     public void shouldGetLockerSizeForPack() throws PackageSizeMappingException {
         Pack pack = TestData.getPackage();
-        LockerSize lockerSize = lockerService.getLockerSizeForPack(pack);
+        LockerSize lockerSize = SizeUtil.getLockerSizeForPack(pack.getPackageSize());
         System.out.println(lockerSize);
         assertNotNull(lockerSize);
     }
