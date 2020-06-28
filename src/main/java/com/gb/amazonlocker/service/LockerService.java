@@ -17,7 +17,6 @@ import java.util.Optional;
 
 public class LockerService {
 
-    ProductService productService = new ProductService();
     public Locker findLockerIbyId(String id) {
         return LockerRepository.lockerMap.get(id);
     }
@@ -95,6 +94,4 @@ public class LockerService {
         String time = localDateFormat.format(new Date());
         return time;
     }
-
-
 }

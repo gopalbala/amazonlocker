@@ -75,6 +75,7 @@ public class LockerServiceTest {
                         .findFirst().get();
         lockerService.pickFromLocker(lockerPackage.getLockerId(), lockerPackage.getCode(),
                 LocalDateTime.now());
+
         assertEquals(LockerStatus.AVAILALBE,
                 LockerRepository.lockerMap.get(notification.getLockerId()).getLockerStatus());
     }
