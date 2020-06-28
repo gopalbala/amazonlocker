@@ -12,16 +12,23 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class LockerRepository {
-    public static List<Locker> lockers = new ArrayList<>();
-    public static Map<String, Locker> lockerMap = new HashMap<>();
+    public static List<Locker> lockers;
+    public static Map<String, Locker> lockerMap;
 
-    public Locker getLocker(LockerSize lockerSize, GeoLocation location) {
-        List<Locker> lockers =
-                this.lockers.stream()
-                        .filter(locker -> locker.getLockerStatus() == LockerStatus.AVAILALBE)
+    static {
+        lockers = new ArrayList<>();
+        lockerMap = new HashMap<>();
+    }
+
+    public static Locker getLocker(LockerSize lockerSize, GeoLocation location) {
+        List<Locker> lockerList =
+                lockers.stream()
+                        .filter(locker ->
+                                locker.getLockerStatus() == LockerStatus.AVAILALBE &&
+                                        locker.getLockerSize() == lockerSize)
                         .collect(Collectors.toList());
-        if (lockers != null && lockers.size() > 0)
-            return lockers.get(0);
+        if (lockerList != null && lockerList.size() > 0)
+            return lockerList.get(0);
         return null;
     }
 }
