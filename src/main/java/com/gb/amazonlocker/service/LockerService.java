@@ -18,8 +18,6 @@ import java.util.Optional;
 public class LockerService {
 
     ProductService productService = new ProductService();
-    LockerRepository lockerRepository = new LockerRepository();
-
     public Locker findLockerIbyId(String id) {
         return LockerRepository.lockerMap.get(id);
     }
@@ -75,7 +73,7 @@ public class LockerService {
 
     private Locker checkAndGetAvailableLockers(LockerSize lockerSize,
                                                GeoLocation geoLocation) {
-        Locker locker = lockerRepository.getLocker(lockerSize, geoLocation);
+        Locker locker = LockerRepository.getLocker(lockerSize, geoLocation);
         locker.setLockerStatus(LockerStatus.BOOKED);
         return locker;
     }

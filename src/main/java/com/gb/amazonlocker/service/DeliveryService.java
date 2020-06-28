@@ -2,6 +2,8 @@ package com.gb.amazonlocker.service;
 
 import com.gb.amazonlocker.exception.PackageSizeMappingException;
 import com.gb.amazonlocker.model.*;
+import com.gb.amazonlocker.repository.LockerPackageRepository;
+import com.gb.amazonlocker.utils.IdGenerator;
 
 import java.util.List;
 
@@ -19,6 +21,8 @@ public class DeliveryService {
         LockerPackage lockerPackage = new LockerPackage();
         lockerPackage.setOrderId(orderId);
         lockerPackage.setLockerId(locker.getId());
+        lockerPackage.setCode(IdGenerator.generateId(6));
+        LockerPackageRepository.lockerPackages.add(lockerPackage);
         locker.setLockerStatus(LockerStatus.CLOSED);
         notificationService.notifyCustomerOrder(lockerPackage);
     }
