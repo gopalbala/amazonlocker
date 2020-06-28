@@ -1,130 +1,100 @@
 package com.gb.amazonlocker.service;
 
-import com.gb.amazonlocker.model.Location;
-import com.gb.amazonlocker.model.Locker;
-import com.gb.amazonlocker.model.LockerSize;
+import com.gb.amazonlocker.exception.LockeCodeMisMatchException;
+import com.gb.amazonlocker.exception.LockerNotFoundException;
+import com.gb.amazonlocker.exception.PackPickTimeExceededException;
+import com.gb.amazonlocker.exception.PackageSizeMappingException;
+import com.gb.amazonlocker.model.*;
+import com.gb.amazonlocker.repository.LockerPackageRepository;
+import com.gb.amazonlocker.repository.LockerRepository;
 
-import java.util.*;
+import java.sql.Time;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.util.Date;
+import java.util.Optional;
 
 public class LockerService {
 
     ProductService productService = new ProductService();
+    LockerRepository lockerRepository = new LockerRepository();
 
-    public List<Locker> getAvailableLockers(Location location, LockerSize lockerSize,
-                                            int numberOfLockers) {
-        return null;
+    public GeoLocation findLockerIbyId(String id) {
+        return LockerRepository.lockerMap.get(id).getLockerLocation().getGeoLocation();
     }
 
-    private boolean checkAvailableLockers(Map<LockerSize, Integer> lockersRequired,
-                                          Location location) {
-        return Math.random() > 0.2;
+    public Locker getLocker(LockerSize lockerSize, GeoLocation geoLocation) {
+        return getAvailableLocker(lockerSize, geoLocation);
     }
 
-    public Map<LockerSize, Integer> getLockerCount(List<String> productIds) {
-        List<Double> xs = new ArrayList<>();
-        List<Double> s = new ArrayList<>();
-        List<Double> m = new ArrayList<>();
-        List<Double> l = new ArrayList<>();
-        List<Double> xl = new ArrayList<>();
-        List<Double> xxl = new ArrayList<>();
+    private Locker getAvailableLocker(LockerSize lockerSize,
+                                      GeoLocation geoLocation) {
+        return checkAndGetAvailableLockers(lockerSize, geoLocation);
+    }
 
-        ArrayList<Double> productSizes = new ArrayList<>();
+    private Locker checkAndGetAvailableLockers(LockerSize lockerSize,
+                                               GeoLocation geoLocation) {
+        Locker locker = lockerRepository.getLocker(lockerSize, geoLocation);
+        locker.setLockerStatus(LockerStatus.BOOKED);
+        return locker;
+    }
 
-        for (String productId : productIds) {
-            //get the product bag volume
-            // group them to sizes that fall under xs, s, m, l, xl
-            // pass it to bin packing algorithm
-            // get the number of lockers required for each size
-            // put them in map and return
-            productSizes.add(productService.getProductVolume(productId));
-
+    public LockerSize getLockerSizeForPack(Pack pack) throws
+            PackageSizeMappingException {
+        double packSize = pack.getPackageSize();
+        if (pack.getPackageSize() < 10) {
+            return LockerSize.XS;
+        } else if (packSize > 10 && packSize <= 20) {
+            return LockerSize.S;
+        } else if (packSize > 20 && packSize <= 40) {
+            return LockerSize.M;
+        } else if (packSize > 40 && packSize <= 50) {
+            return LockerSize.L;
+        } else if (packSize > 50 && packSize <= 70) {
+            return LockerSize.XL;
+        } else if (packSize > 70 && packSize <= 100) {
+            return LockerSize.XXL;
+        } else {
+            throw new PackageSizeMappingException("Package size more than" +
+                    "the largest available locker.");
         }
-
-        for (double productSize : productSizes) {
-            if (productSize < 10) {
-                xs.add(productSize);
-            } else if (productSize > 10 && productSize <= 20) {
-                s.add(productSize);
-            } else if (productSize > 20 && productSize <= 40) {
-                m.add(productSize);
-            } else if (productSize > 40 && productSize <= 50) {
-                l.add(productSize);
-            } else if (productSize > 50 && productSize <= 70) {
-                xl.add(productSize);
-            } else {
-                xxl.add(productSize);
-            }
-        }
-        productSizes.sort(Collections.reverseOrder());
-
-        Map<LockerSize, Integer> lockersRequired = new HashMap<>();
-        if (xs.size() > 0) {
-            lockersRequired.put(LockerSize.XS, getLargeLockerCount(xs));
-        }
-        if (s.size() > 0) {
-            lockersRequired.put(LockerSize.S, getLargeLockerCount(s));
-        }
-        if (m.size() > 0) {
-            lockersRequired.put(LockerSize.M, getLargeLockerCount(m));
-        }
-        if (l.size() > 0) {
-            lockersRequired.put(LockerSize.L, getLargeLockerCount(l));
-        }
-        if (xl.size() > 0) {
-            lockersRequired.put(LockerSize.XL, getLargeLockerCount(xl));
-        }
-        if (xxl.size() > 0) {
-            lockersRequired.putIfAbsent(LockerSize.XXL, getXxLargeLockerCount(xxl));
-        }
-        return lockersRequired;
     }
 
-    private int getXSmallLockerCount(List<Double> xSmallPackageSizes) {
-        if (xSmallPackageSizes.size() == 0)
-            return 0;
-        if (xSmallPackageSizes.size() == 1)
-            return 1;
-        return (int) Math.random() * xSmallPackageSizes.size();
+    public void pickupFromLocker(String lockerId,
+                                 LocalDateTime localDateTime, String code) throws
+            LockerNotFoundException, LockeCodeMisMatchException, PackPickTimeExceededException {
+        Optional<LockerPackage> lockerPackage =
+                LockerPackageRepository.getLockerByLockerId(lockerId);
+        if (!lockerPackage.isPresent())
+            throw new LockerNotFoundException("Locker with code not found");
+        if (!lockerPackage.get().verifyCode(code))
+            throw new LockeCodeMisMatchException("Locker code mismatch");
+        Locker locker = LockerRepository.lockerMap.get(lockerId);
+        if (canPickFromLocker(lockerId, localDateTime)) {
+            locker.setLockerStatus(LockerStatus.AVAILALBE);
+            lockerPackage.get().setCode(null);
+        } else {
+            lockerPackage.get().setCode(null);
+            throw new PackPickTimeExceededException("Package not picked for x days");
+        }
     }
 
-    private int getSmallLockerCount(List<Double> smallPackageSizes) {
-        if (smallPackageSizes.size() == 0)
-            return 0;
-        if (smallPackageSizes.size() == 1)
-            return 1;
-        return (int) Math.random() * smallPackageSizes.size();
+    private boolean canPickFromLocker(String lockerId, LocalDateTime localDateTime) {
+        Locker locker = LockerRepository.lockerMap.get(lockerId);
+        LocationTiming locationTiming = locker.getLockerLocation().getLocationTiming();
+        Timing timing = locationTiming.getTimingMap().get(localDateTime.getDayOfWeek());
+        Time currentTime = Time.valueOf(getTimeFromDate(localDateTime));
+        if (currentTime.after(timing.getOpenTime()) && currentTime.before(timing.getCloseTime())) {
+            return true;
+        }
+        return false;
     }
 
-    private int getMediumLockerCount(List<Double> mediumPackageSizes) {
-        if (mediumPackageSizes.size() == 0)
-            return 0;
-        if (mediumPackageSizes.size() == 1)
-            return 1;
-        return (int) Math.random() * mediumPackageSizes.size();
+    private String getTimeFromDate(LocalDateTime localDateTime) {
+        SimpleDateFormat localDateFormat = new SimpleDateFormat("HH:mm:ss");
+        String time = localDateFormat.format(new Date());
+        return time;
     }
 
-    private int getLargeLockerCount(List<Double> largePackageSizes) {
-        if (largePackageSizes.size() == 0)
-            return 0;
-        if (largePackageSizes.size() == 1)
-            return 1;
-        return (int) Math.random() * largePackageSizes.size();
-    }
-
-    private int getXLargeLockerCount(List<Double> sLargePackageSizes) {
-        if (sLargePackageSizes.size() == 0)
-            return 0;
-        if (sLargePackageSizes.size() == 1)
-            return 1;
-        return (int) Math.random() * sLargePackageSizes.size();
-    }
-
-    private int getXxLargeLockerCount(List<Double> sLargePackageSizes) {
-        if (sLargePackageSizes.size() == 0)
-            return 0;
-        if (sLargePackageSizes.size() == 1)
-            return 1;
-        return (int) Math.random() * sLargePackageSizes.size();
-    }
 
 }
