@@ -5,6 +5,7 @@ import com.gb.amazonlocker.exception.LockerNotFoundException;
 import com.gb.amazonlocker.exception.PackPickTimeExceededException;
 import com.gb.amazonlocker.exception.PackageSizeMappingException;
 import com.gb.amazonlocker.model.*;
+import com.gb.amazonlocker.repository.LockerLocationRepository;
 import com.gb.amazonlocker.repository.LockerPackageRepository;
 import com.gb.amazonlocker.repository.LockerRepository;
 
@@ -19,24 +20,12 @@ public class LockerService {
     ProductService productService = new ProductService();
     LockerRepository lockerRepository = new LockerRepository();
 
-    public GeoLocation findLockerIbyId(String id) {
-        return LockerRepository.lockerMap.get(id).getLockerLocation().getGeoLocation();
+    public Locker findLockerIbyId(String id) {
+        return LockerRepository.lockerMap.get(id);
     }
 
     public Locker getLocker(LockerSize lockerSize, GeoLocation geoLocation) {
         return getAvailableLocker(lockerSize, geoLocation);
-    }
-
-    private Locker getAvailableLocker(LockerSize lockerSize,
-                                      GeoLocation geoLocation) {
-        return checkAndGetAvailableLockers(lockerSize, geoLocation);
-    }
-
-    private Locker checkAndGetAvailableLockers(LockerSize lockerSize,
-                                               GeoLocation geoLocation) {
-        Locker locker = lockerRepository.getLocker(lockerSize, geoLocation);
-        locker.setLockerStatus(LockerStatus.BOOKED);
-        return locker;
     }
 
     public LockerSize getLockerSizeForPack(Pack pack) throws
@@ -60,8 +49,8 @@ public class LockerService {
         }
     }
 
-    public void pickupFromLocker(String lockerId,
-                                 LocalDateTime localDateTime, String code) throws
+    public void pickFromLocker(String lockerId,
+                               String code, LocalDateTime localDateTime) throws
             LockerNotFoundException, LockeCodeMisMatchException, PackPickTimeExceededException {
         Optional<LockerPackage> lockerPackage =
                 LockerPackageRepository.getLockerByLockerId(lockerId);
@@ -79,9 +68,22 @@ public class LockerService {
         }
     }
 
+    private Locker getAvailableLocker(LockerSize lockerSize,
+                                      GeoLocation geoLocation) {
+        return checkAndGetAvailableLockers(lockerSize, geoLocation);
+    }
+
+    private Locker checkAndGetAvailableLockers(LockerSize lockerSize,
+                                               GeoLocation geoLocation) {
+        Locker locker = lockerRepository.getLocker(lockerSize, geoLocation);
+        locker.setLockerStatus(LockerStatus.BOOKED);
+        return locker;
+    }
+
     private boolean canPickFromLocker(String lockerId, LocalDateTime localDateTime) {
         Locker locker = LockerRepository.lockerMap.get(lockerId);
-        LocationTiming locationTiming = locker.getLockerLocation().getLocationTiming();
+        LockerLocation lockerLocation = LockerLocationRepository.getLockerLocation(locker.getLocationId());
+        LocationTiming locationTiming = lockerLocation.getLocationTiming();
         Timing timing = locationTiming.getTimingMap().get(localDateTime.getDayOfWeek());
         Time currentTime = Time.valueOf(getTimeFromDate(localDateTime));
         if (currentTime.after(timing.getOpenTime()) && currentTime.before(timing.getCloseTime())) {

@@ -8,7 +8,7 @@ import java.util.Map;
 public class OrderRepository {
     public static Map<String, Order> orderMap = new HashMap<>();
 
-    public Order getOrder(String orderId) {
+    public static Order getOrder(String orderId) {
         return orderMap.get(orderId);
     }
 }
