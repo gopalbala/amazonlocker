@@ -16,3 +16,5 @@ Customer while ordering item can pick up their nearest geoLocation of locker whe
 Items are kept for maximum of 3 days.  
 User gets locker code using which they can open the locker.  
 Once the locker is closed the code is expired and cannot be open again.  
+
+https://www.amazon.com/primeinsider/tips/amazon-locker-qa.html
