@@ -21,6 +21,8 @@ public class LockerRepository {
     }
 
     public static Locker getLocker(LockerSize lockerSize, GeoLocation location) {
+        //assumption the near by locers in radius are fetched from a service
+
         List<Locker> lockerList =
                 lockers.stream()
                         .filter(locker ->

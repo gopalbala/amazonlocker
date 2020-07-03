@@ -20,7 +20,7 @@ public class SizeUtil {
             return LockerSize.XXL;
         } else {
             throw new PackageSizeMappingException("Package size more than" +
-                    "the largest available locker.");
+                    " the largest available locker.");
         }
     }
 }

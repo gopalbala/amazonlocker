@@ -3,6 +3,7 @@ package com.gb.amazonlocker.service;
 import com.gb.amazonlocker.exception.LockeCodeMisMatchException;
 import com.gb.amazonlocker.exception.LockerNotFoundException;
 import com.gb.amazonlocker.exception.PackPickTimeExceededException;
+import com.gb.amazonlocker.exception.PickupCodeExpiredException;
 import com.gb.amazonlocker.model.*;
 import com.gb.amazonlocker.repository.LockerLocationRepository;
 import com.gb.amazonlocker.repository.LockerPackageRepository;
@@ -26,13 +27,17 @@ public class LockerService {
 
     public void pickFromLocker(String lockerId,
                                String code, LocalDateTime localDateTime) throws
-            LockerNotFoundException, LockeCodeMisMatchException, PackPickTimeExceededException {
+            LockerNotFoundException, LockeCodeMisMatchException, PackPickTimeExceededException,
+            PickupCodeExpiredException {
         Optional<LockerPackage> lockerPackage =
                 LockerPackageRepository.getLockerByLockerId(lockerId);
         if (!lockerPackage.isPresent())
             throw new LockerNotFoundException("Locker with code not found");
         if (!lockerPackage.get().verifyCode(code))
             throw new LockeCodeMisMatchException("Locker code mismatch");
+        if (!lockerPackage.get().isValidCode(localDateTime)) {
+            throw new PickupCodeExpiredException("Pickup code expired");
+        }
         Locker locker = LockerRepository.lockerMap.get(lockerId);
         if (canPickFromLocker(lockerId, localDateTime)) {
             locker.setLockerStatus(LockerStatus.AVAILALBE);
